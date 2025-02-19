@@ -12,8 +12,8 @@ from scipy.spatial.distance import cdist
 # BASES DE DATOS #
 
 # Rutas de los archivos locales
-MATRIX_FILE_PATH = r".\Ingredients Matrix.xlsx"
-STANDARDIZATION_FILE_PATH = r".\Diccionario de Reemplazo.json"
+MATRIX_FILE_PATH = r"Ingredients Matrix.xlsx"
+STANDARDIZATION_FILE_PATH = r"Diccionario de Reemplazo.json"
 
 # Cargar la matriz de ingredientes y el diccionario de reemplazo
 try:
