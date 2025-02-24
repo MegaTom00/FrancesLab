@@ -221,14 +221,8 @@ if st.button("Generar Recomendaciones"):
 
     # Preprocesamiento de los ingredientes
     clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
-    if isinstance(clean_ingredients, str):
-        st.error(clean_ingredients)
-    else:
-        st.write("### Ingredientes Procesados")
-        st.write(clean_ingredients)
-        # Convertir clean_ingredients a lista si no lo es
-        if not isinstance(clean_ingredients, list):
-            clean_ingredients = clean_ingredients.tolist()
+    st.write("### Ingredientes Procesados")
+    st.write(clean_ingredients)
     
     # Análisis de los ingredientes    
     natural_ingredients, artificial_ingredients, true_properties = list_analisis(clean_ingredients, ingredient_matrix)
