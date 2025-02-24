@@ -98,21 +98,34 @@ def process_ingredients(input_ingredients, replace_dict, data):
     replaced_ingredients = replace_ingredients(standardized_ingredients)
 
     data_ingredients = data['Ingredients'].str.lower().tolist()
-    final_ingredients = []
-        
+    corrected_ingredients = []
+    
+    if 'ingredient_choices' not in st.session_state:
+        st.session_state.ingredient_choices = {}
+    
     for ingredient in replaced_ingredients:
         if ingredient in data_ingredients:
-            final_ingredients.append(ingredient)
+            corrected_ingredients.append(ingredient)
         else:
             suggested = find_similar_ingredient(ingredient, data_ingredients)
             if suggested:
-                user_choice = st.radio(f"¿Te referías a '{suggested}'?", (f"Si '{suggested}'", "No, mantener el original"), key=ingredient)
+                if ingredient not in st.session_state.ingredient_choices:
+                    st.session_state.ingredient_choices[ingredient] = suggested
+                user_choice = st.radio(f"¿Te referías a '{ingredient}'?", (st.session_state.ingredient_choices[ingredient], "No, mantener el original"), key=ingredient)
                 if user_choice != "No, mantener el original":
-                    final_ingredients.append(suggested)
+                    corrected_ingredients.append(user_choice)
                 else:
-                    final_ingredients.append(ingredient)
+                    corrected_ingredients.append(ingredient)
             else:
-                final_ingredients.append(ingredient)
+                corrected_ingredients.append(ingredient)
+    
+    if st.button("Confirmar selección"):
+        st.session_state.confirmed_ingredients = corrected_ingredients
+    
+    if 'confirmed_ingredients' in st.session_state:
+        return st.session_state.confirmed_ingredients
+    else:
+        st.stop()
     
     return final_ingredients
 
