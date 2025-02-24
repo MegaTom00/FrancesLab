@@ -100,11 +100,10 @@ def process_ingredients(input_ingredients, replace_dict, data):
     data_ingredients = data['Ingredients'].str.lower().tolist()
     corrected_ingredients = []
     
-    # Inicializar session_state si no existe
     if 'ingredient_choices' not in st.session_state:
         st.session_state.ingredient_choices = {}
     if 'confirmed_ingredients' not in st.session_state:
-        st.session_state.confirmed_ingredients = None  # Asegurar que no quede vacío
+        st.session_state.confirmed_ingredients = None
     
     for ingredient in replaced_ingredients:
         if ingredient in data_ingredients:
@@ -112,30 +111,20 @@ def process_ingredients(input_ingredients, replace_dict, data):
         else:
             suggested = find_similar_ingredient(ingredient, data_ingredients)
             if suggested:
-                # Guardar sugerencia en session_state si es la primera vez que aparece
                 if ingredient not in st.session_state.ingredient_choices:
                     st.session_state.ingredient_choices[ingredient] = suggested
-                
-                # Mostrar opciones al usuario
                 user_choice = st.radio(
                     f"¿Te referías a '{ingredient}'?", 
                     (st.session_state.ingredient_choices[ingredient], "No, mantener el original"), 
                     key=ingredient
                 )
-    
-                # Agregar la opción elegida a la lista final
                 corrected_ingredients.append(user_choice if user_choice != "No, mantener el original" else ingredient)
             else:
                 corrected_ingredients.append(ingredient)
     
-    # Confirmar la selección y continuar con el análisis
-    if st.button("Confirmar selección"):
-        st.session_state.confirmed_ingredients = corrected_ingredients
-        st.rerun()  # 🔥 Esto permite que Streamlit recargue la app con los datos actualizados
-    
-    # Si el usuario ya confirmó, devolver los ingredientes procesados
-    if st.session_state.confirmed_ingredients:
-        return st.session_state.confirmed_ingredients
+    if 'confirmed_ingredients' not in st.session_state or st.session_state.confirmed_ingredients is None:
+        return None  # Indica que aún falta confirmación
+    return st.session_state.confirmed_ingredients
 
 
 # Función de análisis de la lista de ingredientes dada: ingredientes naturales, no-naturales y propiedades presentes
@@ -221,6 +210,12 @@ if st.button("Generar Recomendaciones"):
 
     # Preprocesamiento de los ingredientes
     clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
+    if clean_ingredients is None:
+        if st.button("Confirmar selección"):
+            st.session_state.confirmed_ingredients = st.session_state.ingredient_choices.values()
+            st.rerun()
+        st.stop()
+    
     st.write("### Ingredientes Procesados")
     st.write(clean_ingredients)
     
