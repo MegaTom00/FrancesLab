@@ -98,7 +98,7 @@ def process_ingredients(input_ingredients, replace_dict, data):
     replaced_ingredients = replace_ingredients(standardized_ingredients)
 
     data_ingredients = data['Ingredients'].str.lower().tolist()
-        final_ingredients = []
+    final_ingredients = []
         
         for ingredient in replaced_ingredients:
             if ingredient in data_ingredients:
