@@ -100,21 +100,21 @@ def process_ingredients(input_ingredients, replace_dict, data):
     data_ingredients = data['Ingredients'].str.lower().tolist()
     final_ingredients = []
         
-        for ingredient in replaced_ingredients:
-            if ingredient in data_ingredients:
-                final_ingredients.append(ingredient)
-            else:
-                suggested = find_similar_ingredient(ingredient, data_ingredients)
-                if suggested:
-                    user_choice = st.radio(f"¿Te referías a '{ingredient}'?", (suggested, "No, mantener el original"), key=ingredient)
-                    if user_choice != "No, mantener el original":
-                        final_ingredients.append(suggested)
-                    else:
-                        final_ingredients.append(ingredient)
+    for ingredient in replaced_ingredients:
+        if ingredient in data_ingredients:
+            final_ingredients.append(ingredient)
+        else:
+            suggested = find_similar_ingredient(ingredient, data_ingredients)
+            if suggested:
+                user_choice = st.radio(f"¿Te referías a '{ingredient}'?", (suggested, "No, mantener el original"), key=ingredient)
+                if user_choice != "No, mantener el original":
+                    final_ingredients.append(suggested)
                 else:
                     final_ingredients.append(ingredient)
-        
-        return final_ingredients
+            else:
+                final_ingredients.append(ingredient)
+    
+    return final_ingredients
 
     if isinstance(final_ingredients, str):
         return final_ingredients
