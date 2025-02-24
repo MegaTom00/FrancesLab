@@ -127,12 +127,12 @@ def process_ingredients(input_ingredients, replace_dict, data):
     else:
         st.stop()
     
-    return final_ingredients
+    return corrected_ingredients
 
-    if isinstance(final_ingredients, str):
-        return final_ingredients
+    if isinstance(corrected_ingredients, str):
+        return corrected_ingredients
     
-    return final_ingredients
+    return corrected_ingredients
 
 
 # Función de análisis de la lista de ingredientes dada: ingredientes naturales, no-naturales y propiedades presentes
