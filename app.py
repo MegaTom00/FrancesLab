@@ -92,7 +92,6 @@ def process_ingredients(input_ingredients, replace_dict, data):
         return None
         
     # Ejecución de funciones anidadas
-    # Ejecución de funciones anidadas
     standardized_ingredients = standardize_ingredients(input_ingredients)
     if isinstance(standardized_ingredients, str):
         return standardized_ingredients
@@ -101,9 +100,11 @@ def process_ingredients(input_ingredients, replace_dict, data):
     data_ingredients = data['Ingredients'].str.lower().tolist()
     corrected_ingredients = []
     
-    # Inicializar en session_state si no existe
+    # Inicializar session_state si no existe
     if 'ingredient_choices' not in st.session_state:
         st.session_state.ingredient_choices = {}
+    if 'confirmed_ingredients' not in st.session_state:
+        st.session_state.confirmed_ingredients = None  # Asegurar que no quede vacío
     
     for ingredient in replaced_ingredients:
         if ingredient in data_ingredients:
@@ -127,15 +128,14 @@ def process_ingredients(input_ingredients, replace_dict, data):
             else:
                 corrected_ingredients.append(ingredient)
     
-    # Confirmar la selección y continuar
+    # Confirmar la selección y continuar con el análisis
     if st.button("Confirmar selección"):
         st.session_state.confirmed_ingredients = corrected_ingredients
+        st.rerun()  # 🔥 Esto permite que Streamlit recargue la app con los datos actualizados
     
-    # Detener ejecución hasta que el usuario confirme
-    if 'confirmed_ingredients' not in st.session_state:
-        st.stop()
-    
-    return st.session_state.confirmed_ingredients
+    # Si el usuario ya confirmó, devolver los ingredientes procesados
+    if st.session_state.confirmed_ingredients:
+        return st.session_state.confirmed_ingredients
 
 
 # Función de análisis de la lista de ingredientes dada: ingredientes naturales, no-naturales y propiedades presentes
