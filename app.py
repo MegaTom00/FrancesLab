@@ -106,7 +106,7 @@ def process_ingredients(input_ingredients, replace_dict, data):
         else:
             suggested = find_similar_ingredient(ingredient, data_ingredients)
             if suggested:
-                user_choice = st.radio(f"¿Te referías a '{suggested}'?", ("Si '{suggested}'", "No, mantener el original"), key=ingredient)
+                user_choice = st.radio(f"¿Te referías a '{suggested}'?", (f"Si '{suggested}'", "No, mantener el original"), key=ingredient)
                 if user_choice != "No, mantener el original":
                     final_ingredients.append(suggested)
                 else:
