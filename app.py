@@ -7,6 +7,7 @@ import re
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from scipy.spatial.distance import cdist
+from rapidfuzz import process
 
 
 # BASES DE DATOS #
@@ -82,21 +83,39 @@ def process_ingredients(input_ingredients, replace_dict, data):
     # 2º función: Reemplazar ingredientes según diccionario de reemplazo
     def replace_ingredients(ingredients_list):
         return [replace_dict.get(ingredient, ingredient) for ingredient in ingredients_list]
-
-    # 3º función: Comprobar si los ingredientes están presentes en la base de datos
-    def check_if_present(ingredients_list):
-        data_ingredients = data['Ingredients'].to_list()
-        missing_ingredients = [ingredient for ingredient in ingredients_list if ingredient not in data_ingredients]
-        if missing_ingredients:
-            return f"Lo siento, los siguientes ingredientes no se encuentran en la matriz de ingredientes: {', '.join(missing_ingredients)}"
-        return ingredients_list
-
+        
+    # 3° función para encontrar coincidencias aproximadas
+    def find_similar_ingredient(ingredient, ingredient_list, threshold=80):
+        match, score, _ = process.extractOne(ingredient, ingredient_list)
+        if score >= threshold:
+            return match
+        return None
+        
+    # Ejecución de funciones anidadas
     standardized_ingredients = standardize_ingredients(input_ingredients)
     if isinstance(standardized_ingredients, str):
         return standardized_ingredients
-    
     replaced_ingredients = replace_ingredients(standardized_ingredients)
-    final_ingredients = check_if_present(replaced_ingredients)
+
+    data_ingredients = data['Ingredients'].str.lower().tolist()
+        final_ingredients = []
+        
+        for ingredient in replaced_ingredients:
+            if ingredient in data_ingredients:
+                final_ingredients.append(ingredient)
+            else:
+                suggested = find_similar_ingredient(ingredient, data_ingredients)
+                if suggested:
+                    user_choice = st.radio(f"¿Te referías a '{ingredient}'?", (suggested, "No, mantener el original"), key=ingredient)
+                    if user_choice != "No, mantener el original":
+                        final_ingredients.append(suggested)
+                    else:
+                        final_ingredients.append(ingredient)
+                else:
+                    final_ingredients.append(ingredient)
+        
+        return final_ingredients
+
     if isinstance(final_ingredients, str):
         return final_ingredients
     
