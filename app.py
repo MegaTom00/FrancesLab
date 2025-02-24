@@ -92,14 +92,16 @@ def process_ingredients(input_ingredients, replace_dict, data):
         return None
         
     # Ejecución de funciones anidadas
+    # Ejecución de funciones anidadas
     standardized_ingredients = standardize_ingredients(input_ingredients)
     if isinstance(standardized_ingredients, str):
         return standardized_ingredients
+    
     replaced_ingredients = replace_ingredients(standardized_ingredients)
-
     data_ingredients = data['Ingredients'].str.lower().tolist()
     corrected_ingredients = []
     
+    # Inicializar en session_state si no existe
     if 'ingredient_choices' not in st.session_state:
         st.session_state.ingredient_choices = {}
     
@@ -109,30 +111,31 @@ def process_ingredients(input_ingredients, replace_dict, data):
         else:
             suggested = find_similar_ingredient(ingredient, data_ingredients)
             if suggested:
+                # Guardar sugerencia en session_state si es la primera vez que aparece
                 if ingredient not in st.session_state.ingredient_choices:
                     st.session_state.ingredient_choices[ingredient] = suggested
-                user_choice = st.radio(f"¿Te referías a '{ingredient}'?", (st.session_state.ingredient_choices[ingredient], "No, mantener el original"), key=ingredient)
-                if user_choice != "No, mantener el original":
-                    corrected_ingredients.append(user_choice)
-                else:
-                    corrected_ingredients.append(ingredient)
+                
+                # Mostrar opciones al usuario
+                user_choice = st.radio(
+                    f"¿Te referías a '{ingredient}'?", 
+                    (st.session_state.ingredient_choices[ingredient], "No, mantener el original"), 
+                    key=ingredient
+                )
+    
+                # Agregar la opción elegida a la lista final
+                corrected_ingredients.append(user_choice if user_choice != "No, mantener el original" else ingredient)
             else:
                 corrected_ingredients.append(ingredient)
     
+    # Confirmar la selección y continuar
     if st.button("Confirmar selección"):
         st.session_state.confirmed_ingredients = corrected_ingredients
     
-    if 'confirmed_ingredients' in st.session_state:
-        return st.session_state.confirmed_ingredients
-    else:
+    # Detener ejecución hasta que el usuario confirme
+    if 'confirmed_ingredients' not in st.session_state:
         st.stop()
     
-    return corrected_ingredients
-
-    if isinstance(corrected_ingredients, str):
-        return corrected_ingredients
-    
-    return corrected_ingredients
+    return st.session_state.confirmed_ingredients
 
 
 # Función de análisis de la lista de ingredientes dada: ingredientes naturales, no-naturales y propiedades presentes
