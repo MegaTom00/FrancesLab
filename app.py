@@ -85,7 +85,7 @@ def process_ingredients(input_ingredients, replace_dict, data):
         return [replace_dict.get(ingredient, ingredient) for ingredient in ingredients_list]
         
     # 3° función para encontrar coincidencias aproximadas
-     def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
+    def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
         matches = process.extract(ingredient, ingredient_list, limit=3)
         return [match for match, score, _ in matches if score >= threshold]
         
