@@ -122,9 +122,7 @@ def process_ingredients(input_ingredients, replace_dict, data):
             else:
                 corrected_ingredients.append(ingredient)
     
-    if st.session_state.confirmed_ingredients is None:
-        st.session_state.confirmed_ingredients = corrected_ingredients
-        return None  # Indica que aún falta confirmación
+    st.session_state.confirmed_ingredients = corrected_ingredients  # Bypass confirmation
     return st.session_state.confirmed_ingredients
     
 
@@ -209,14 +207,8 @@ ingredients_list = st.text_area("Lista de Ingredientes", placeholder="Ejemplo: w
 
 # Botón para generar recomendaciones, inicio del proceso
 if st.button("Generar Recomendaciones"):
-
     # Preprocesamiento de los ingredientes
     clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
-    if clean_ingredients is None:
-        if st.button("Confirmar selección"):
-            st.session_state.confirmed_ingredients = list(st.session_state.ingredient_choices.values())
-            st.rerun()
-        st.stop()
     
     st.write("### Ingredientes Procesados")
     st.write(clean_ingredients)
