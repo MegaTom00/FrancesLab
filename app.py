@@ -116,10 +116,12 @@ def process_ingredients(input_ingredients, replace_dict, data):
                     st.session_state.ingredient_choices[ingredient] + ["No, mantener el original"],
                     key=ingredient
                 )
-                if user_choice == "No, mantener el original":
-                    corrected_ingredients.append(ingredient)
-                else:
-                    corrected_ingredients.append(user_choice)
+                st.session_state.selected_choice = user_choice
+                if st.button("Confirmar selección", key=f"confirm_{ingredient}"):
+                    if user_choice == "No, mantener el original":
+                        corrected_ingredients.append(ingredient)
+                    else:
+                        corrected_ingredients.append(user_choice)
                     st.session_state.confirmed_ingredients = corrected_ingredients
                     st.experimental_rerun()  # Vuelve a ejecutar el script después de la selección del usuario
             else:
