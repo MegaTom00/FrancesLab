@@ -85,11 +85,9 @@ def process_ingredients(input_ingredients, replace_dict, data):
         return [replace_dict.get(ingredient, ingredient) for ingredient in ingredients_list]
         
     # 3° función para encontrar coincidencias aproximadas
-    def find_similar_ingredient(ingredient, ingredient_list, threshold=80):
-        match, score, _ = process.extractOne(ingredient, ingredient_list)
-        if score >= threshold:
-            return match
-        return None
+     def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
+        matches = process.extract(ingredient, ingredient_list, limit=3)
+        return [match for match, score, _ in matches if score >= threshold]
         
     # Ejecución de funciones anidadas
     standardized_ingredients = standardize_ingredients(input_ingredients)
@@ -109,13 +107,13 @@ def process_ingredients(input_ingredients, replace_dict, data):
         if ingredient in data_ingredients:
             corrected_ingredients.append(ingredient)
         else:
-            suggested = find_similar_ingredient(ingredient, data_ingredients)
-            if suggested:
+            suggestions = find_similar_ingredients(ingredient, data_ingredients)
+            if suggestions:
                 if ingredient not in st.session_state.ingredient_choices:
-                    st.session_state.ingredient_choices[ingredient] = suggested
+                    st.session_state.ingredient_choices[ingredient] = suggestions
                 user_choice = st.radio(
                     f"¿Te referías a '{ingredient}'?", 
-                    (st.session_state.ingredient_choices[ingredient], "No, mantener el original"), 
+                    st.session_state.ingredient_choices[ingredient] + ["No, mantener el original"],
                     key=ingredient
                 )
                 corrected_ingredients.append(user_choice if user_choice != "No, mantener el original" else ingredient)
