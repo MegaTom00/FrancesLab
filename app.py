@@ -122,9 +122,11 @@ def process_ingredients(input_ingredients, replace_dict, data):
             else:
                 corrected_ingredients.append(ingredient)
     
-    if 'confirmed_ingredients' not in st.session_state or st.session_state.confirmed_ingredients is None:
+    if st.session_state.confirmed_ingredients is None:
+        st.session_state.confirmed_ingredients = corrected_ingredients
         return None  # Indica que aún falta confirmación
     return st.session_state.confirmed_ingredients
+    
 
 
 # Función de análisis de la lista de ingredientes dada: ingredientes naturales, no-naturales y propiedades presentes
@@ -212,7 +214,7 @@ if st.button("Generar Recomendaciones"):
     clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
     if clean_ingredients is None:
         if st.button("Confirmar selección"):
-            st.session_state.confirmed_ingredients = st.session_state.ingredient_choices.values()
+            st.session_state.confirmed_ingredients = list(st.session_state.ingredient_choices.values())
             st.rerun()
         st.stop()
     
