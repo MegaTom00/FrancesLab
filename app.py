@@ -84,7 +84,7 @@ def process_ingredients(input_ingredients, replace_dict, data):
     def replace_ingredients(ingredients_list):
         return [replace_dict.get(ingredient, ingredient) for ingredient in ingredients_list]
         
-    # 3° función para encontrar coincidencias aproximadas
+    # 3º función para encontrar coincidencias aproximadas
     def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
         matches = process.extract(ingredient, ingredient_list, limit=3)
         return [match for match, score, _ in matches if score >= threshold]
@@ -116,11 +116,16 @@ def process_ingredients(input_ingredients, replace_dict, data):
                     st.session_state.ingredient_choices[ingredient] + ["No, mantener el original"],
                     key=ingredient
                 )
-                corrected_ingredients.append(user_choice if user_choice != "No, mantener el original" else ingredient)
+                if user_choice == "No, mantener el original":
+                    corrected_ingredients.append(ingredient)
+                else:
+                    corrected_ingredients.append(user_choice)
+                    st.session_state.confirmed_ingredients = corrected_ingredients
+                    st.experimental_rerun()  # Vuelve a ejecutar el script después de la selección del usuario
             else:
                 corrected_ingredients.append(ingredient)
     
-    st.session_state.confirmed_ingredients = corrected_ingredients  # Bypass confirmation
+    st.session_state.confirmed_ingredients = corrected_ingredients
     return st.session_state.confirmed_ingredients
     
 
@@ -207,6 +212,8 @@ ingredients_list = st.text_area("Lista de Ingredientes", placeholder="Ejemplo: w
 if st.button("Generar Recomendaciones"):
     # Preprocesamiento de los ingredientes
     clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
+    if not clean_ingredients:
+        st.stop()
     
     st.write("### Ingredientes Procesados")
     st.write(clean_ingredients)
