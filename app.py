@@ -170,86 +170,113 @@ st.title("Sistema de Recomendación de Ingredientes Cosméticos")
 # Input de la lista de ingredientes
 st.write("Ingresa una lista de ingredientes para obtener recomendaciones.")
 
+# Inicialización de variables de estado
+if 'processing_stage' not in st.session_state:
+    st.session_state.processing_stage = 'input'
+if 'ingredient_choices' not in st.session_state:
+    st.session_state.ingredient_choices = {}
+if 'final_ingredients' not in st.session_state:
+    st.session_state.final_ingredients = []
+if 'clean_ingredients' not in st.session_state:
+    st.session_state.clean_ingredients = []
+if 'current_ingredient_index' not in st.session_state:
+    st.session_state.current_ingredient_index = 0
+
 ingredients_list = st.text_area("Lista de Ingredientes", placeholder="Ejemplo: water, sodium hydroxide, fragrance")
 
-# Botón para generar recomendaciones, inicio del proceso
-if st.button("Generar Recomendaciones"):
-    # Preprocesamiento de los ingredientes
-    clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
-    if not clean_ingredients:
-        st.stop()
-
-    ## Revisamos si todos los ingredientes se encuentran en la base de datos
-    # Función para encontrar ingredientes similares
-    def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
-        matches = process.extract(ingredient, ingredient_list, limit=3)
-        return [match for match, score, _ in matches if score >= threshold]
-
-    # Lista de los ingredientes de la Ingredients Matrix
-    matrix_ingredients = ingredient_matrix['Ingredients'].str.lower().tolist()
-    # Lista de los ingredientes definitivos para el análisis
-    final_ingredients = []
-    # Inicializar las elecciones de ingredientes en el estado de la sesión
-    if 'ingredient_choices' not in st.session_state:
-        st.session_state.ingredient_choices = {}
-
-    for ingredient in clean_ingredients:
-        if ingredient in matrix_ingredients:
-            final_ingredients.append(ingredient)
-        else:
-            suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
-            if suggestions:
-                if ingredient not in st.session_state.ingredient_choices:
-                    st.session_state.ingredient_choices[ingredient] = suggestions
-                user_choice = st.radio(
-                    f"¿A qué te refieres con '{ingredient}'?", 
-                    st.session_state.ingredient_choices[ingredient] + ["Ninguna de las anteriores"],
-                    key=ingredient
-                )
-                st.session_state.selected_choice = user_choice
-                if st.button("Confirmar selección", key=f"confirm_{ingredient}"):
-                    if user_choice == "Ninguna de las anteriores":
-                        st.write(f"Voy a ignorar {ingredient} pues no lo tengo en mi base")
-                    else:
-                        final_ingredients.append(user_choice)
-                    # Stop here to wait for user confirmation
-                    st.stop()
-                # Añadir este stop para esperar la selección del usuario
-                st.stop()
-            else:
-                st.error(f"Lo siento, no pude encontrar el ingrediente '{ingredient}'")
+# Botón para generar recomendaciones
+if st.button("Generar Recomendaciones") or st.session_state.processing_stage != 'input':
+    # Si apenas se presionó el botón, inicializar el proceso
+    if st.session_state.processing_stage == 'input':
+        st.session_state.clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
+        st.session_state.final_ingredients = []
+        st.session_state.current_ingredient_index = 0
+        st.session_state.processing_stage = 'ingredient_selection'
     
-    # Verificar si hay ingredientes en la lista final
-    if not final_ingredients:
-        st.error("No se han procesado ingredientes válidos.")
-        st.stop()
+    # Procesamiento de ingredientes
+    if st.session_state.processing_stage == 'ingredient_selection':
+        # Lista de los ingredientes de la Ingredients Matrix
+        matrix_ingredients = ingredient_matrix['Ingredients'].str.lower().tolist()
         
-    # Continuar con el análisis y recomendaciones
+        # Verificar si hay más ingredientes por procesar
+        if st.session_state.current_ingredient_index < len(st.session_state.clean_ingredients):
+            current_ingredient = st.session_state.clean_ingredients[st.session_state.current_ingredient_index]
+            
+            # Si el ingrediente está en la matriz, agrégalo directamente
+            if current_ingredient in matrix_ingredients:
+                st.session_state.final_ingredients.append(current_ingredient)
+                st.session_state.current_ingredient_index += 1
+                st.experimental_rerun()  # Recargar para procesar el siguiente ingrediente
+            else:
+                # Buscar sugerencias para este ingrediente
+                suggestions = find_similar_ingredients(current_ingredient, matrix_ingredients)
+                if suggestions:
+                    user_choice = st.radio(
+                        f"¿A qué te refieres con '{current_ingredient}'?", 
+                        suggestions + ["Ninguna de las anteriores"],
+                        key=f"select_{current_ingredient}"
+                    )
+                    
+                    if st.button("Confirmar selección", key=f"confirm_{current_ingredient}"):
+                        if user_choice != "Ninguna de las anteriores":
+                            st.session_state.final_ingredients.append(user_choice)
+                        
+                        st.session_state.current_ingredient_index += 1
+                        
+                        # Si ya procesamos todos los ingredientes, pasar a análisis
+                        if st.session_state.current_ingredient_index >= len(st.session_state.clean_ingredients):
+                            st.session_state.processing_stage = 'analysis'
+                        
+                        st.experimental_rerun()
+                else:
+                    st.error(f"Lo siento, no pude encontrar el ingrediente '{current_ingredient}'")
+                    st.session_state.current_ingredient_index += 1
+                    st.experimental_rerun()
+        else:
+            # Si ya procesamos todos los ingredientes, pasar a análisis
+            st.session_state.processing_stage = 'analysis'
+            st.experimental_rerun()
     
-    st.write("### Ingredientes Procesados")
-    st.write(final_ingredients)
-    
-    # Análisis de los ingredientes    
-    natural_ingredients, artificial_ingredients, true_properties = list_analisis(final_ingredients, ingredient_matrix)
-    st.write("### Análisis de los ingredientes de la lista:\n")
-    st.write("##### Naturales:")
-    st.write(f"{', '.join(natural_ingredients)}\n")
-    st.write("##### Artificiales:")
-    st.write(f"{', '.join(artificial_ingredients)}")
-    st.write(f"##### Propiedades únicas de los ingredientes:")
-    st.write(f"{true_properties}")
-
-    # Recomendaciones de ingredientes
-    # Ejecutar el programa
-    property_vectors = get_property_vectors(artificial_ingredients, ingredient_matrix)
-    replacements = get_replacements(property_vectors, ingredient_matrix)
-    recommendations = create_recommendations(final_ingredients, replacements)
-
-    # Imprimir los resultados
-    st.write("### Sistema de Recomendación de Ingredientes\n")
-    st.write("#### Reemplazos naturales:")
-    for ingredient, replacements in replacements.items():
-        st.write(f"\n*'{ingredient}'* -> {', '.join(replacements)}")
-    st.write("#### Top 10 recomendaciones:")
-    for i, recommendation in enumerate(recommendations, 1):
-        st.write(f"{i}. {recommendation}\n")
+    # Análisis de los ingredientes
+    if st.session_state.processing_stage == 'analysis':
+        # Verificar si hay ingredientes en la lista final
+        if not st.session_state.final_ingredients:
+            st.error("No se han procesado ingredientes válidos.")
+            st.session_state.processing_stage = 'input'  # Volver al inicio
+            st.stop()
+        
+        st.write("### Ingredientes Procesados")
+        st.write(st.session_state.final_ingredients)
+        
+        # Análisis de los ingredientes
+        natural_ingredients, artificial_ingredients, true_properties = list_analisis(st.session_state.final_ingredients, ingredient_matrix)
+        st.write("### Análisis de los ingredientes de la lista:\n")
+        st.write("##### Naturales:")
+        st.write(f"{', '.join(natural_ingredients)}\n")
+        st.write("##### Artificiales:")
+        st.write(f"{', '.join(artificial_ingredients)}")
+        st.write(f"##### Propiedades únicas de los ingredientes:")
+        st.write(f"{true_properties}")
+        
+        # Recomendaciones de ingredientes
+        if artificial_ingredients:
+            property_vectors = get_property_vectors(artificial_ingredients, ingredient_matrix)
+            replacements = get_replacements(property_vectors, ingredient_matrix)
+            recommendations = create_recommendations(st.session_state.final_ingredients, replacements)
+            
+            st.write("### Sistema de Recomendación de Ingredientes\n")
+            st.write("#### Reemplazos naturales:")
+            for ingredient, repl in replacements.items():
+                st.write(f"\n*'{ingredient}'* -> {', '.join(repl)}")
+            
+            st.write("#### Top 10 recomendaciones:")
+            for i, recommendation in enumerate(recommendations, 1):
+                st.write(f"{i}. {recommendation}\n")
+        
+        # Botón para nueva consulta
+        if st.button("Nueva consulta"):
+            st.session_state.processing_stage = 'input'
+            st.session_state.final_ingredients = []
+            st.session_state.clean_ingredients = []
+            st.session_state.current_ingredient_index = 0
+            st.experimental_rerun()
