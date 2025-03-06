@@ -19,14 +19,14 @@ STANDARDIZATION_FILE_PATH = r"Diccionario de Reemplazo.json"
 # Cargar la matriz de ingredientes y el diccionario de reemplazo
 try:
     ingredient_matrix = pd.read_excel(MATRIX_FILE_PATH)
-    st.success("Matriz de ingredientes cargada correctamente desde el archivo local!")
+    # st.success("Matriz de ingredientes cargada correctamente desde el archivo local!")
 except Exception as e:
     st.error(f"Error al cargar la matriz de ingredientes: {e}")
 
 try:
     with open(STANDARDIZATION_FILE_PATH, "r", encoding="utf-8") as f:
         ingredient_standardization = json.load(f)
-    st.success("Diccionario de estandarización cargado correctamente desde el archivo local!")
+    # st.success("Diccionario de estandarización cargado correctamente desde el archivo local!")
 except Exception as e:
     st.error(f"Error al cargar el diccionario de estandarización: {e}")
 
@@ -122,6 +122,9 @@ def process_ingredients(input_ingredients, replace_dict, data):
                         corrected_ingredients.append(ingredient)
                     else:
                         corrected_ingredients.append(user_choice)
+                    # Asegúrate de que el estado se guarde antes de la re-ejecución
+                    st.session_state.ingredient_choices[ingredient] = suggestions
+                    st.session_state.selected_choice = user_choice
                     st.session_state.confirmed_ingredients = corrected_ingredients
                     st.experimental_rerun()  # Vuelve a ejecutar el script después de la selección del usuario
             else:
