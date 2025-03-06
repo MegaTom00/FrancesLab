@@ -84,50 +84,14 @@ def process_ingredients(input_ingredients, replace_dict, data):
     def replace_ingredients(ingredients_list):
         return [replace_dict.get(ingredient, ingredient) for ingredient in ingredients_list]
         
-    # 3º función para encontrar coincidencias aproximadas
-    def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
-        matches = process.extract(ingredient, ingredient_list, limit=3)
-        return [match for match, score, _ in matches if score >= threshold]
-        
     # Ejecución de funciones anidadas
     standardized_ingredients = standardize_ingredients(input_ingredients)
     if isinstance(standardized_ingredients, str):
         return standardized_ingredients
     
     replaced_ingredients = replace_ingredients(standardized_ingredients)
-    data_ingredients = data['Ingredients'].str.lower().tolist()
-    corrected_ingredients = []
     
-    if 'ingredient_choices' not in st.session_state:
-        st.session_state.ingredient_choices = {}
-    if 'confirmed_ingredients' not in st.session_state:
-        st.session_state.confirmed_ingredients = None
-    
-    for ingredient in replaced_ingredients:
-        if ingredient in data_ingredients:
-            corrected_ingredients.append(ingredient)
-        else:
-            suggestions = find_similar_ingredients(ingredient, data_ingredients)
-            if suggestions:
-                if ingredient not in st.session_state.ingredient_choices:
-                    st.session_state.ingredient_choices[ingredient] = suggestions
-                user_choice = st.radio(
-                    f"¿A qué te refieres con '{ingredient}'?", 
-                    st.session_state.ingredient_choices[ingredient] + ["Ninguna de las anteriores"],
-                    key=ingredient
-                )
-                st.session_state.selected_choice = user_choice
-                if st.button("Confirmar selección", key=f"confirm_{ingredient}"):
-                    if user_choice == "Ninguna de las anteriores":
-                        st.write(f"Voy a ignorar {ingredient} pues no lo tengo en mi base")
-                    else:
-                        corrected_ingredients.append(user_choice)
-            else:
-                st.error(f"Lo siento, no pude encontrar el ingrediente {ingredient}")
-    
-    st.session_state.confirmed_ingredients = corrected_ingredients
-    
-    return st.session_state.confirmed_ingredients
+    return replaced_ingredients
 
 
 # Función de análisis de la lista de ingredientes dada: ingredientes naturales, no-naturales y propiedades presentes
@@ -215,20 +179,47 @@ if st.button("Generar Recomendaciones"):
     if not clean_ingredients:
         st.stop()
 
-    # Verificar si hay ingredientes sin confirmar
-    unconfirmed_ingredients = [ingredient for ingredient in replaced_ingredients if ingredient not in st.session_state.confirmed_ingredients]
+    ## Revisamos si todos los ingredientes se encuentran en la base de datos
+    # Función para encontrar ingredientes similares
+    def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
+        matches = process.extract(ingredient, ingredient_list, limit=3)
+        return [match for match, score, _ in matches if score >= threshold]
 
-    if unconfirmed_ingredients:
-        st.error("Por favor, confirma todos los ingredientes antes de continuar.")
-        st.stop()
-
+    # Lista de los ingredientes de la Ingredients Matrix
+    data_ingredients = data['Ingredients'].str.lower().tolist()
+    # Lista de los ingredientes definitivos para el análisis
+    final_ingredients = []
+    
+    for ingredient in clean_ingredients:
+        st.session_state.ingredient_choices = {}
+        if ingredient in data_ingredients:
+            final_ingredients.append(ingredient)
+        else:
+            suggestions = find_similar_ingredients(ingredient, ingredient_matrix)
+            if suggestions:
+                if ingredient not in st.session_state.ingredient_choices:
+                    st.session_state.ingredient_choices[ingredient] = suggestions
+                user_choice = st.radio(
+                    f"¿A qué te refieres con '{ingredient}'?", 
+                    st.session_state.ingredient_choices[ingredient] + ["Ninguna de las anteriores"],
+                    key=ingredient
+                )
+                st.session_state.selected_choice = user_choice
+                if st.button("Confirmar selección", key=f"confirm_{ingredient}"):
+                    if user_choice == "Ninguna de las anteriores":
+                        st.write(f"Voy a ignorar {ingredient} pues no lo tengo en mi base")
+                    else:
+                        final_ingredients.append(user_choice)
+            else:
+                st.error(f"Lo siento, no pude encontrar el ingrediente {ingredient}")
+    
 # Continuar con el análisis y recomendaciones
     
     st.write("### Ingredientes Procesados")
-    st.write(clean_ingredients)
+    st.write(final_ingredients)
     
     # Análisis de los ingredientes    
-    natural_ingredients, artificial_ingredients, true_properties = list_analisis(clean_ingredients, ingredient_matrix)
+    natural_ingredients, artificial_ingredients, true_properties = list_analisis(final_ingredients, ingredient_matrix)
     st.write("### Análisis de los ingredientes de la lista:\n")
     st.write("##### Naturales:")
     st.write(f"{', '.join(natural_ingredients)}\n")
@@ -241,7 +232,7 @@ if st.button("Generar Recomendaciones"):
     # Ejecutar el programa
     property_vectors = get_property_vectors(artificial_ingredients, ingredient_matrix)
     replacements = get_replacements(property_vectors, ingredient_matrix)
-    recommendations = create_recommendations(clean_ingredients, replacements)
+    recommendations = create_recommendations(final_ingredients, replacements)
 
     # Imprimir los resultados
     st.write("### Sistema de Recomendación de Ingredientes\n")
