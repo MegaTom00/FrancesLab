@@ -112,7 +112,7 @@ def process_ingredients(input_ingredients, replace_dict, data):
                 if ingredient not in st.session_state.ingredient_choices:
                     st.session_state.ingredient_choices[ingredient] = suggestions
                 user_choice = st.radio(
-                    f"¿Te referías a '{ingredient}'?", 
+                    f"¿A qué te refieres con '{ingredient}'?", 
                     st.session_state.ingredient_choices[ingredient] + ["No, mantener el original"],
                     key=ingredient
                 )
@@ -122,13 +122,8 @@ def process_ingredients(input_ingredients, replace_dict, data):
                         corrected_ingredients.append(ingredient)
                     else:
                         corrected_ingredients.append(user_choice)
-                    # Asegúrate de que el estado se guarde antes de la re-ejecución
-                    st.session_state.ingredient_choices[ingredient] = suggestions
-                    st.session_state.selected_choice = user_choice
-                    st.session_state.confirmed_ingredients = corrected_ingredients
-                    st.experimental_rerun()  # Vuelve a ejecutar el script después de la selección del usuario
             else:
-                corrected_ingredients.append(ingredient)
+                st.error(f"Lo siento, no pude encontrar el ingrediente {ingredient}")
     
     st.session_state.confirmed_ingredients = corrected_ingredients
     
