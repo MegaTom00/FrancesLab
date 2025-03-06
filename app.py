@@ -197,7 +197,7 @@ if st.button("Generar Recomendaciones"):
         if ingredient in matrix_ingredients:
             final_ingredients.append(ingredient)
         else:
-            suggestions = find_similar_ingredients(ingredient, ingredient_matrix)
+            suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
             if suggestions:
                 if ingredient not in st.session_state.ingredient_choices:
                     st.session_state.ingredient_choices[ingredient] = suggestions
@@ -215,7 +215,7 @@ if st.button("Generar Recomendaciones"):
                     # Stop here to wait for user confirmation
                     st.stop()
             else:
-                st.write(f"{suggestions}") #st.error(f"Lo siento, no pude encontrar el ingrediente '{ingredient}'")
+                st.error(f"Lo siento, no pude encontrar el ingrediente '{ingredient}'")
     
     # Verificar si hay ingredientes en la lista final
     if not final_ingredients:
