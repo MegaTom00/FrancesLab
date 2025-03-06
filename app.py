@@ -189,9 +189,11 @@ if st.button("Generar Recomendaciones"):
     matrix_ingredients = ingredient_matrix['Ingredients'].str.lower().tolist()
     # Lista de los ingredientes definitivos para el análisis
     final_ingredients = []
-    
-    for ingredient in clean_ingredients:
+    # Inicializar las elecciones de ingredientes en el estado de la sesión
+    if 'ingredient_choices' not in st.session_state:
         st.session_state.ingredient_choices = {}
+
+    for ingredient in clean_ingredients:
         if ingredient in matrix_ingredients:
             final_ingredients.append(ingredient)
         else:
@@ -211,7 +213,7 @@ if st.button("Generar Recomendaciones"):
                     else:
                         final_ingredients.append(user_choice)
             else:
-                st.error(f"Lo siento, no pude encontrar el ingrediente {ingredient}")
+                st.error(f"Lo siento, no pude encontrar el ingrediente '{ingredient}'")
     
 # Continuar con el análisis y recomendaciones
     
