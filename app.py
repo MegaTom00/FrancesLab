@@ -186,13 +186,13 @@ if st.button("Generar Recomendaciones"):
         return [match for match, score, _ in matches if score >= threshold]
 
     # Lista de los ingredientes de la Ingredients Matrix
-    data_ingredients = data['Ingredients'].str.lower().tolist()
+    matrix_ingredients = ingredient_matrix['Ingredients'].str.lower().tolist()
     # Lista de los ingredientes definitivos para el análisis
     final_ingredients = []
     
     for ingredient in clean_ingredients:
         st.session_state.ingredient_choices = {}
-        if ingredient in data_ingredients:
+        if ingredient in matrix_ingredients:
             final_ingredients.append(ingredient)
         else:
             suggestions = find_similar_ingredients(ingredient, ingredient_matrix)
