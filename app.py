@@ -214,6 +214,8 @@ if st.button("Generar Recomendaciones"):
                         final_ingredients.append(user_choice)
                     # Stop here to wait for user confirmation
                     st.stop()
+                # Añadir este stop para esperar la selección del usuario
+                st.stop()
             else:
                 st.error(f"Lo siento, no pude encontrar el ingrediente '{ingredient}'")
     
