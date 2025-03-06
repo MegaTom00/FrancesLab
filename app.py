@@ -212,10 +212,17 @@ if st.button("Generar Recomendaciones"):
                         st.write(f"Voy a ignorar {ingredient} pues no lo tengo en mi base")
                     else:
                         final_ingredients.append(user_choice)
+                    # Stop here to wait for user confirmation
+                    st.stop()
             else:
                 st.error(f"Lo siento, no pude encontrar el ingrediente '{ingredient}'")
     
-# Continuar con el análisis y recomendaciones
+    # Verificar si hay ingredientes en la lista final
+    if not final_ingredients:
+        st.error("No se han procesado ingredientes válidos.")
+        st.stop()
+        
+    # Continuar con el análisis y recomendaciones
     
     st.write("### Ingredientes Procesados")
     st.write(final_ingredients)
