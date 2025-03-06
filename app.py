@@ -113,23 +113,19 @@ def process_ingredients(input_ingredients, replace_dict, data):
                     st.session_state.ingredient_choices[ingredient] = suggestions
                 user_choice = st.radio(
                     f"¿A qué te refieres con '{ingredient}'?", 
-                    st.session_state.ingredient_choices[ingredient] + ["No, mantener el original"],
+                    st.session_state.ingredient_choices[ingredient] + ["Ninguna de las anteriores"],
                     key=ingredient
                 )
                 st.session_state.selected_choice = user_choice
                 if st.button("Confirmar selección", key=f"confirm_{ingredient}"):
-                    if user_choice == "No, mantener el original":
-                        corrected_ingredients.append(ingredient)
+                    if user_choice == "Ninguna de las anteriores":
+                        st.write(f"Voy a ignorar {ingredient} pues no lo tengo en mi base")
                     else:
                         corrected_ingredients.append(user_choice)
             else:
                 st.error(f"Lo siento, no pude encontrar el ingrediente {ingredient}")
     
     st.session_state.confirmed_ingredients = corrected_ingredients
-    
-    # Presentar la lista final de ingredientes corregidos
-    st.write("### Lista Final de Ingredientes Corregidos")
-    st.write(corrected_ingredients)
     
     return st.session_state.confirmed_ingredients
 
