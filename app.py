@@ -214,6 +214,15 @@ if st.button("Generar Recomendaciones"):
     clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
     if not clean_ingredients:
         st.stop()
+
+    # Verificar si hay ingredientes sin confirmar
+    unconfirmed_ingredients = [ingredient for ingredient in replaced_ingredients if ingredient not in st.session_state.confirmed_ingredients]
+
+    if unconfirmed_ingredients:
+        st.error("Por favor, confirma todos los ingredientes antes de continuar.")
+        st.stop()
+
+# Continuar con el análisis y recomendaciones
     
     st.write("### Ingredientes Procesados")
     st.write(clean_ingredients)
