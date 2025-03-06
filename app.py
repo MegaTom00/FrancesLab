@@ -215,7 +215,7 @@ if st.button("Generar Recomendaciones"):
                     # Stop here to wait for user confirmation
                     st.stop()
             else:
-                st.error(f"Lo siento, no pude encontrar el ingrediente '{ingredient}'")
+                st.write(f"{suggestions}") #st.error(f"Lo siento, no pude encontrar el ingrediente '{ingredient}'")
     
     # Verificar si hay ingredientes en la lista final
     if not final_ingredients:
