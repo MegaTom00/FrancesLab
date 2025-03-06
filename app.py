@@ -206,7 +206,7 @@ if st.button("Generar Recomendaciones") or st.session_state.processing_stage != 
             if current_ingredient in matrix_ingredients:
                 st.session_state.final_ingredients.append(current_ingredient)
                 st.session_state.current_ingredient_index += 1
-                st.experimental_rerun()  # Recargar para procesar el siguiente ingrediente
+                st.rerun()  # Recargar para procesar el siguiente ingrediente
             else:
                 # Buscar sugerencias para este ingrediente
                 suggestions = find_similar_ingredients(current_ingredient, matrix_ingredients)
@@ -227,15 +227,15 @@ if st.button("Generar Recomendaciones") or st.session_state.processing_stage != 
                         if st.session_state.current_ingredient_index >= len(st.session_state.clean_ingredients):
                             st.session_state.processing_stage = 'analysis'
                         
-                        st.experimental_rerun()
+                        st.rerun()
                 else:
                     st.error(f"Lo siento, no pude encontrar el ingrediente '{current_ingredient}'")
                     st.session_state.current_ingredient_index += 1
-                    st.experimental_rerun()
+                    st.rerun()
         else:
             # Si ya procesamos todos los ingredientes, pasar a análisis
             st.session_state.processing_stage = 'analysis'
-            st.experimental_rerun()
+            st.rerun()
     
     # Análisis de los ingredientes
     if st.session_state.processing_stage == 'analysis':
@@ -279,4 +279,4 @@ if st.button("Generar Recomendaciones") or st.session_state.processing_stage != 
             st.session_state.final_ingredients = []
             st.session_state.clean_ingredients = []
             st.session_state.current_ingredient_index = 0
-            st.experimental_rerun()
+            st.rerun()
