@@ -131,8 +131,12 @@ def process_ingredients(input_ingredients, replace_dict, data):
                 corrected_ingredients.append(ingredient)
     
     st.session_state.confirmed_ingredients = corrected_ingredients
-    return st.session_state.confirmed_ingredients
     
+    # Presentar la lista final de ingredientes corregidos
+    st.write("### Lista Final de Ingredientes Corregidos")
+    st.write(corrected_ingredients)
+    
+    return st.session_state.confirmed_ingredients
 
 
 # Función de análisis de la lista de ingredientes dada: ingredientes naturales, no-naturales y propiedades presentes
