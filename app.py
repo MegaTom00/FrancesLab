@@ -190,8 +190,6 @@ if st.button("Generar Recomendaciones"):
     # Lista de los ingredientes definitivos para el análisis
     final_ingredients = []
     # Inicializar las elecciones de ingredientes en el estado de la sesión
-    if 'ingredient_choices' not in st.session_state:
-        st.session_state.ingredient_choices = {}
     if 'confirmed_ingredients' not in st.session_state:
         st.session_state.confirmed_ingredients = {}
 
@@ -201,21 +199,22 @@ if st.button("Generar Recomendaciones"):
         else:
             suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
             if suggestions:
-                if ingredient not in st.session_state.ingredient_choices:
-                    st.session_state.ingredient_choices[ingredient] = suggestions
+                if ingredient not in st.session_state.confirmed_ingredients:
+                    st.session_state.confirmed_ingredients[ingredient] = suggestions[0]  # Preseleccionar la mejor opción
                 
-                user_choice = st.selectbox(
+                selected_option = st.selectbox(
                     f"Selecciona una alternativa para '{ingredient}':", 
                     suggestions + ["Ninguna de las anteriores"],
+                    index=suggestions.index(st.session_state.confirmed_ingredients[ingredient]) if st.session_state.confirmed_ingredients[ingredient] in suggestions else len(suggestions),
                     key=f"choice_{ingredient}"
                 )
                 
-                if st.button(f"Confirmar selección para {ingredient}", key=f"confirm_{ingredient}"):
-                    if user_choice != "Ninguna de las anteriores":
-                        st.session_state.confirmed_ingredients[ingredient] = user_choice
-                        final_ingredients.append(user_choice)
-                    else:
-                        st.write(f"'{ingredient}' será ignorado.")
+                st.session_state.confirmed_ingredients[ingredient] = selected_option  # Guardar la selección inmediatamente
+                
+                if selected_option != "Ninguna de las anteriores":
+                    final_ingredients.append(selected_option)
+                else:
+                    st.write(f"'{ingredient}' será ignorado.")
             else:
                 st.error(f"No se encontraron sugerencias para '{ingredient}'")
     
