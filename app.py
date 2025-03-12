@@ -215,7 +215,7 @@ if st.button("Generar Recomendaciones"):
             else:
                 st.write(f"El ingrediente {ingredient} será omitido")
         else:
-            st.write(f"No se encontró una coincidencia para el ingrediente "{ingredient}", por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
+            st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
             st.stop()
             
    
