@@ -199,19 +199,26 @@ if st.button("Generar Recomendaciones"):
 
     # Para los ingredientes que NO están en la base, ofrecemos alternativas
     
-    for ingredient in unidentified:
-        if "selection" not in st.session_state:
-            st.session_state.selection = None
+    for i, ingredient in enumerate(unidentified):
+        # Create a unique key for each selectbox
+        selection_key = f"selection_{i}_{ingredient}"
+        
+        # Initialize session state for this specific selection if needed
+        if selection_key not in st.session_state:
+            st.session_state[selection_key] = None
+            
         suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
         if suggestions:
             selected_option = st.selectbox(
                 f"Selecciona una alternativa para '{ingredient}'",
                 suggestions + ["Ninguna de las anteriores"],
                 index=0,
-                key = "selection"
+                key=selection_key
             )
-            if st.session_state.selection != "Ninguna de las anteriores":
-                final_ingredients.append(st.session_state.selection)
+            
+            # Now use the value directly from the selectbox or from session state
+            if selected_option != "Ninguna de las anteriores":
+                final_ingredients.append(selected_option)
             else:
                 st.write(f"El ingrediente {ingredient} será omitido")
         else:
