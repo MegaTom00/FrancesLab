@@ -201,7 +201,7 @@ if st.button("Generar Recomendaciones"):
     
     for ingredient in unidentified:
         if "selection" not in st.session_state:
-        st.session_state.selection = None
+            st.session_state.selection = None
         suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
         if suggestions:
             selected_option = st.selectbox(
