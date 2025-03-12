@@ -192,6 +192,8 @@ if st.button("Generar Recomendaciones"):
     # Inicializar las elecciones de ingredientes en el estado de la sesión
     if 'confirmed_ingredients' not in st.session_state:
         st.session_state.confirmed_ingredients = {}
+    if 'selection_made' not in st.session_state:
+        st.session_state.selection_made = False
 
     for ingredient in clean_ingredients:
         if ingredient in matrix_ingredients:
@@ -209,7 +211,11 @@ if st.button("Generar Recomendaciones"):
                     key=f"choice_{ingredient}"
                 )
                 
-                st.session_state.confirmed_ingredients[ingredient] = selected_option  # Guardar la selección inmediatamente
+                if st.button(f"Confirmar selección para {ingredient}", key=f"confirm_{ingredient}"):
+                    st.session_state.confirmed_ingredients[ingredient] = selected_option  # Guardar la selección
+                    st.session_state.selection_made = True
+                
+                st.stop()  # Detener la ejecución hasta que el usuario confirme
                 
                 if selected_option != "Ninguna de las anteriores":
                     final_ingredients.append(selected_option)
