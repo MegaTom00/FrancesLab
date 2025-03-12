@@ -165,7 +165,7 @@ def create_recommendations(ingredients, replacements):
 
 # INTERFAZ DE USUARIO #
 
-# Initialize the selections list in session state if it doesn't exist
+# Initialize all session state variables
 if "final_ingredients" not in st.session_state:
     st.session_state.final_ingredients = []
 if "processing_complete" not in st.session_state:
@@ -175,6 +175,14 @@ if "processing_complete" not in st.session_state:
 def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
     matches = process.extract(ingredient, ingredient_list, limit=3)
     return [match for match, score, _ in matches if score >= threshold]
+
+# Función para actualizar selección de sugerencias
+def update_selection(ingredient, selection):
+    if selection != "Ninguna de las anteriores":
+        if selection not in st.session_state.final_ingredients:
+            st.session_state.final_ingredients.append(selection)
+    else:
+        st.write(f"El ingrediente {ingredient} será omitido")
 
 # Título de la aplicación
 st.title("Sistema de Recomendación de Ingredientes Cosméticos")
@@ -205,29 +213,22 @@ if not st.session_state.processing_complete:
                 unidentified.append(ingredient)
     
         
-        # Selección de ingredientes sugeridos para unidentified
+        # Selección de ingredientes sugeridos para unidentified     
         for i, ingredient in enumerate(unidentified):
             # Create a unique key for each selectbox
             selection_key = f"selection_{i}_{ingredient}"
-            
+
             suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
             if suggestions:
-                selected_option = st.selectbox(
+                st.selectbox(
                     f"Selecciona una alternativa para '{ingredient}'",
                     suggestions + ["Ninguna de las anteriores"],
                     index=0,
-                    key=selection_key
+                    key=selection_key,
+                    on_change=update_selection,
+                    args=(ingredient, st.session_state[selection_key])
                 )
                 
-                # Add a button to confirm this selection
-                if st.button(f"Confirmar selección para '{ingredient}'", key=f"confirm_{i}"):
-                    if selected_option != "Ninguna de las anteriores":
-                        # Add to our selections list in session state if not already there
-                        if (selected_option) not in st.session_state.selections:
-                            st.session_state.final_ingredients.append(selected_option)
-                        st.success(f"Seleccionado: {selected_option} para {ingredient}")
-                    else:
-                        st.write(f"El ingrediente {ingredient} será omitido")
             else:
                 st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
                 st.stop()
@@ -276,6 +277,10 @@ if st.session_state.processing_complete:
     for i, recommendation in enumerate(recommendations, 1):
         st.write(f"{i}. {recommendation}\n")
 
-    # Reiniciar variables de la sesión para próxima búsqueda
-    st.session_state.final_ingredients = []
-    st.session_state.processing_complete = False
+    def reset_session():
+        st.session_state.final_ingredients = []
+        st.session_state.processing_complete = False
+        st.session_state.selections = []
+    
+    if st.button("Nueva búsqueda"):
+        reset_session()
