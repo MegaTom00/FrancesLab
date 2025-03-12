@@ -198,10 +198,10 @@ if st.button("Generar Recomendaciones"):
             unidentified.append(ingredient)
 
     # Para los ingredientes que NO están en la base, ofrecemos alternativas
-    if "selection" not in st.session_state:
-        st.session_state.selection = None
     
     for ingredient in unidentified:
+        if "selection" not in st.session_state:
+        st.session_state.selection = None
         suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
         if suggestions:
             selected_option = st.selectbox(
@@ -210,12 +210,12 @@ if st.button("Generar Recomendaciones"):
                 index=0,
                 key = "selection"
             )
-            if selected_option != "Ninguna de las anteriores":
-                final_ingredients.append(selected_option)
+            if st.session_state.selection != "Ninguna de las anteriores":
+                final_ingredients.append(st.session_state.selection)
             else:
                 st.write(f"El ingrediente {ingredient} será omitido")
         else:
-            st.write(f"No se encontró una coincidencia para el ingrediente {ingredient}, por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
+            st.write(f"No se encontró una coincidencia para el ingrediente "{ingredient}", por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
             st.stop()
             
    
