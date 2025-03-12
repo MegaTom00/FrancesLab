@@ -232,9 +232,9 @@ if st.button("Generar Recomendaciones"):
                 st.stop()
                 
         if st.button("Finalizar selecciones"):
-        # Mark processing as complete to avoid rerunning this section
-        st.session_state.processing_complete = True
-        st.experimental_rerun()  # Optional: force a clean rerun with the new state
+            # Mark processing as complete to avoid rerunning this section
+            st.session_state.processing_complete = True
+            st.experimental_rerun()  # Optional: force a clean rerun with the new state
            
     # Display results after processing is complete
     if st.session_state.processing_complete:
