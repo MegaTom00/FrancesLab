@@ -184,27 +184,28 @@ st.write("Ingresa una lista de ingredientes para obtener recomendaciones.")
 ingredients_list = st.text_area("Lista de Ingredientes", placeholder="Ejemplo: water, sodium hydroxide, fragrance")
 
 # Botón para generar recomendaciones, inicio del proceso
-if st.button("Generar Recomendaciones"):
-    # Preprocesamiento de los ingredientes
-    clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
-    if not clean_ingredients:
-        st.stop()
+if not st.session_state.processing_complete:
 
-    ## Revisamos si todos los ingredientes se encuentran en la base de datos
-    # Lista de los ingredientes de la Ingredients Matrix
-    matrix_ingredients = ingredient_matrix['Ingredients'].str.lower().tolist()
-    # Lista de los ingredientes definitivos para el análisis
-    unidentified = []
-    # Agregamos a los ingredientes finales solo los que sí se encuentran dentro de la base
-    for ingredient in clean_ingredients:
-        if ingredient in matrix_ingredients:
-            st.session_state.final_ingredients.append(ingredient)
-        else:
-            unidentified.append(ingredient)
-
+    if st.button("Generar Recomendaciones"):
+        # Preprocesamiento de los ingredientes
+        clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
+        if not clean_ingredients:
+            st.stop()
     
-    # Only run the ingredient selection logic if processing is not complete
-    if not st.session_state.processing_complete:
+        ## Revisamos si todos los ingredientes se encuentran en la base de datos
+        # Lista de los ingredientes de la Ingredients Matrix
+        matrix_ingredients = ingredient_matrix['Ingredients'].str.lower().tolist()
+        # Lista de los ingredientes definitivos para el análisis
+        unidentified = []
+        # Agregamos a los ingredientes finales solo los que sí se encuentran dentro de la base
+        for ingredient in clean_ingredients:
+            if ingredient in matrix_ingredients:
+                st.session_state.final_ingredients.append(ingredient)
+            else:
+                unidentified.append(ingredient)
+    
+        
+        # Selección de ingredientes sugeridos para unidentified
         for i, ingredient in enumerate(unidentified):
             # Create a unique key for each selectbox
             selection_key = f"selection_{i}_{ingredient}"
@@ -234,43 +235,47 @@ if st.button("Generar Recomendaciones"):
         if st.button("Finalizar selecciones"):
             # Mark processing as complete to avoid rerunning this section
             st.session_state.processing_complete = True
-            st.experimental_rerun()  # Optional: force a clean rerun with the new state
+            st.experimental_rerun()  # Force a clean rerun with the new state
            
-    # Display results after processing is complete
-    if st.session_state.processing_complete:
-        final_ingredients = st.session_state.final_ingredients
-        if not final_ingredients:
-            st.error("No se han procesado ingredientes válidos.")
-            st.stop()
-        st.success(f"Ingredientes finales: {final_ingredients}")   
+# Display results after processing is complete
+if st.session_state.processing_complete:
+    final_ingredients = st.session_state.final_ingredients
+    if not final_ingredients:
+        st.error("No se han procesado ingredientes válidos.")
+        st.stop()
+    st.success(f"Ingredientes finales: {final_ingredients}")   
 
-            
-        # Continuar con el análisis y recomendaciones
         
-        st.write("### Ingredientes Procesados")
-        st.write(final_ingredients)
-        
-        # Análisis de los ingredientes    
-        natural_ingredients, artificial_ingredients, true_properties = list_analisis(final_ingredients, ingredient_matrix)
-        st.write("### Análisis de los ingredientes de la lista:\n")
-        st.write("##### Naturales:")
-        st.write(f"{', '.join(natural_ingredients)}\n")
-        st.write("##### Artificiales:")
-        st.write(f"{', '.join(artificial_ingredients)}")
-        st.write(f"##### Propiedades únicas de los ingredientes:")
-        st.write(f"{true_properties}")
+    # Continuar con el análisis y recomendaciones
     
-        # Recomendaciones de ingredientes
-        # Ejecutar el programa
-        property_vectors = get_property_vectors(artificial_ingredients, ingredient_matrix)
-        replacements = get_replacements(property_vectors, ingredient_matrix)
-        recommendations = create_recommendations(final_ingredients, replacements)
+    st.write("### Ingredientes Procesados")
+    st.write(final_ingredients)
     
-        # Imprimir los resultados
-        st.write("### Sistema de Recomendación de Ingredientes\n")
-        st.write("#### Reemplazos naturales:")
-        for ingredient, replacements in replacements.items():
-            st.write(f"\n*'{ingredient}'* -> {', '.join(replacements)}")
-        st.write("#### Top 10 recomendaciones:")
-        for i, recommendation in enumerate(recommendations, 1):
-            st.write(f"{i}. {recommendation}\n")
+    # Análisis de los ingredientes    
+    natural_ingredients, artificial_ingredients, true_properties = list_analisis(final_ingredients, ingredient_matrix)
+    st.write("### Análisis de los ingredientes de la lista:\n")
+    st.write("##### Naturales:")
+    st.write(f"{', '.join(natural_ingredients)}\n")
+    st.write("##### Artificiales:")
+    st.write(f"{', '.join(artificial_ingredients)}")
+    st.write(f"##### Propiedades únicas de los ingredientes:")
+    st.write(f"{true_properties}")
+
+    # Recomendaciones de ingredientes
+    # Ejecutar el programa
+    property_vectors = get_property_vectors(artificial_ingredients, ingredient_matrix)
+    replacements = get_replacements(property_vectors, ingredient_matrix)
+    recommendations = create_recommendations(final_ingredients, replacements)
+
+    # Imprimir los resultados
+    st.write("### Sistema de Recomendación de Ingredientes\n")
+    st.write("#### Reemplazos naturales:")
+    for ingredient, replacements in replacements.items():
+        st.write(f"\n*'{ingredient}'* -> {', '.join(replacements)}")
+    st.write("#### Top 10 recomendaciones:")
+    for i, recommendation in enumerate(recommendations, 1):
+        st.write(f"{i}. {recommendation}\n")
+
+    # Reiniciar variables de la sesión para próxima búsqueda
+    st.session_state.final_ingredients = []
+    st.session_state.processing_complete = False
