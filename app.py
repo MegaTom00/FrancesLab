@@ -189,41 +189,36 @@ if st.button("Generar Recomendaciones"):
     matrix_ingredients = ingredient_matrix['Ingredients'].str.lower().tolist()
     # Lista de los ingredientes definitivos para el análisis
     final_ingredients = []
-    # Inicializar las elecciones de ingredientes en el estado de la sesión
-    if 'confirmed_ingredients' not in st.session_state:
-        st.session_state.confirmed_ingredients = {}
-    if 'selection_made' not in st.session_state:
-        st.session_state.selection_made = False
-
+    unidentified = []
+    # Agregamos a los ingredientes finales solo los que sí se encuentran dentro de la base
     for ingredient in clean_ingredients:
         if ingredient in matrix_ingredients:
             final_ingredients.append(ingredient)
         else:
-            suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
-            if suggestions:
-                if ingredient not in st.session_state.confirmed_ingredients:
-                    st.session_state.confirmed_ingredients[ingredient] = suggestions[0]  # Preseleccionar la mejor opción
-                
-                selected_option = st.selectbox(
-                    f"Selecciona una alternativa para '{ingredient}':", 
-                    suggestions + ["Ninguna de las anteriores"],
-                    index=suggestions.index(st.session_state.confirmed_ingredients[ingredient]) if st.session_state.confirmed_ingredients[ingredient] in suggestions else len(suggestions),
-                    key=f"choice_{ingredient}"
-                )
-                
-                if st.button(f"Confirmar selección para {ingredient}", key=f"confirm_{ingredient}"):
-                    st.session_state.confirmed_ingredients[ingredient] = selected_option  # Guardar la selección
-                    st.session_state.selection_made = True
-                
-                st.stop()  # Detener la ejecución hasta que el usuario confirme
-                
-                if selected_option != "Ninguna de las anteriores":
-                    final_ingredients.append(selected_option)
-                else:
-                    st.write(f"'{ingredient}' será ignorado.")
-            else:
-                st.error(f"No se encontraron sugerencias para '{ingredient}'")
+            unidentified.append(ingredient)
+
+    # Para los ingredientes que NO están en la base, ofrecemos alternativas
+    if "selection" not in st.session_state:
+    st.session_state.selection = None
     
+    for ingredient in unidentified:
+        suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
+        if suggestions:
+            selected_option = st.selectbox(
+                f"Selecciona una alternativa para '{ingredient}'",
+                suggestions + ["Ninguna de las anteriores"],
+                index=0,
+                key = "selection"
+            )
+            if selected_option != "Ninguna de las anteriores":
+                final_ingredients.append(selected_option)
+            else:
+                st.write(f"El ingrediente {ingredient} será omitido")
+        else:
+            st.write(f"No se encontró una coincidencia para el ingrediente {ingredient}, por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
+            st.stop()
+            
+   
     # Verificar si hay ingredientes en la lista final
     if not final_ingredients:
         st.error("No se han procesado ingredientes válidos.")
