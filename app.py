@@ -198,50 +198,52 @@ if st.button("Generar Recomendaciones"):
             unidentified.append(ingredient)
 
     # Initialize the selections list in session state if it doesn't exist
-    if "selections" not in st.session_state:
-        st.session_state.selections = []
+    if "final_ingredients" not in st.session_state:
+        st.session_state.final_ingredients = []
+    if "processing_complete" not in st.session_state:
+        st.session_state.processing_complete = False
     
-    for i, ingredient in enumerate(unidentified):
-        # Create a unique key for each selectbox
-        selection_key = f"selection_{i}_{ingredient}"
-        
-        suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
-        if suggestions:
-            selected_option = st.selectbox(
-                f"Selecciona una alternativa para '{ingredient}'",
-                suggestions + ["Ninguna de las anteriores"],
-                index=0,
-                key=selection_key
-            )
+    # Only run the ingredient selection logic if processing is not complete
+    if not st.session_state.processing_complete:
+        for i, ingredient in enumerate(unidentified):
+            # Create a unique key for each selectbox
+            selection_key = f"selection_{i}_{ingredient}"
             
-            # Add a button to confirm this selection
-            if st.button(f"Confirmar selección para '{ingredient}'", key=f"confirm_{i}"):
-                if selected_option != "Ninguna de las anteriores":
-                    # Add to our selections list in session state if not already there
-                    if (ingredient, selected_option) not in st.session_state.selections:
-                        st.session_state.selections.append((ingredient, selected_option))
-                    st.success(f"Seleccionado: {selected_option} para {ingredient}")
-                else:
-                    st.write(f"El ingrediente {ingredient} será omitido")
-        else:
-            st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
-            st.stop()
-
-    # After all selections are made, you can add a button to finalize
-    if st.button("Finalizar selecciones"):
-        # Extract just the selected alternatives (second item in each tuple)
-        selected_alternatives = [item[1] for item in st.session_state.selections]
-        # Append to final_ingredients
-        final_ingredients.extend(selected_alternatives)
-        st.success(f"Ingredientes finales: {final_ingredients}")
-        
-        # Clear the selections for next time
-        st.session_state.selections = []              
-       
-        # Verificar si hay ingredientes en la lista final
+            suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
+            if suggestions:
+                selected_option = st.selectbox(
+                    f"Selecciona una alternativa para '{ingredient}'",
+                    suggestions + ["Ninguna de las anteriores"],
+                    index=0,
+                    key=selection_key
+                )
+                
+                # Add a button to confirm this selection
+                if st.button(f"Confirmar selección para '{ingredient}'", key=f"confirm_{i}"):
+                    if selected_option != "Ninguna de las anteriores":
+                        # Add to our selections list in session state if not already there
+                        if (ingredient, selected_option) not in st.session_state.selections:
+                            st.session_state.final_ingredients.append((ingredient, selected_option))
+                        st.success(f"Seleccionado: {selected_option} para {ingredient}")
+                    else:
+                        st.write(f"El ingrediente {ingredient} será omitido")
+            else:
+                st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
+                st.stop()
+                
+        if st.button("Finalizar selecciones"):
+        # Mark processing as complete to avoid rerunning this section
+        st.session_state.processing_complete = True
+        st.experimental_rerun()  # Optional: force a clean rerun with the new state
+           
+    # Display results after processing is complete
+    if st.session_state.processing_complete:
+        final_ingredients = st.session_state.final_ingredients
         if not final_ingredients:
             st.error("No se han procesado ingredientes válidos.")
             st.stop()
+        st.success(f"Ingredientes finales: {final_ingredients}")   
+
             
         # Continuar con el análisis y recomendaciones
         
