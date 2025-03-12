@@ -189,11 +189,11 @@ st.title("Sistema de Recomendación de Ingredientes Cosméticos")
 # Input de la lista de ingredientes
 st.write("Ingresa una lista de ingredientes para obtener recomendaciones.")
 
-ingredients_list = st.text_area("Lista de Ingredientes", placeholder="Ejemplo: water, sodium hydroxide, fragrance")
 
 # Botón para generar recomendaciones, inicio del proceso
 if not st.session_state.processing_complete:
-
+    ingredients_list = st.text_area("Lista de Ingredientes", placeholder="Ejemplo: water, sodium hydroxide, fragrance")
+    
     if st.button("Generar Recomendaciones"):
         # Preprocesamiento de los ingredientes
         clean_ingredients = process_ingredients(ingredients_list, ingredient_standardization, ingredient_matrix)
@@ -213,27 +213,32 @@ if not st.session_state.processing_complete:
                 unidentified.append(ingredient)
     
         
-        # Selección de ingredientes sugeridos para unidentified     
-        for i, ingredient in enumerate(unidentified):
-            # Create a unique key for each selectbox
-            selection_key = f"selection_{i}_{ingredient}"
-
-            suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
-            if suggestions:
-                st.selectbox(
-                    f"Selecciona una alternativa para '{ingredient}'",
-                    suggestions + ["Ninguna de las anteriores"],
-                    index=0,
-                    key=selection_key,
-                    on_change=update_selection,
-                    args=(ingredient, st.session_state[selection_key])
-                )
-                
-            else:
-                st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
-                st.stop()
-                
-        if st.button("Finalizar selecciones"):
+        # Selección de ingredientes sugeridos para unidentified
+        if unidentified:
+            for i, ingredient in enumerate(unidentified):
+                # Create a unique key for each selectbox
+                selection_key = f"selection_{i}_{ingredient}"
+    
+                suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
+                if suggestions:
+                    st.selectbox(
+                        f"Selecciona una alternativa para '{ingredient}'",
+                        suggestions + ["Ninguna de las anteriores"],
+                        index=0,
+                        key=selection_key,
+                        on_change=update_selection,
+                        args=(ingredient, st.session_state[selection_key])
+                    )
+                    
+                else:
+                    st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
+                    st.stop()
+                    
+            if st.button("Finalizar selecciones"):
+                # Mark processing as complete to avoid rerunning this section
+                st.session_state.processing_complete = True
+                st.experimental_rerun()  # Force a clean rerun with the new state
+        else:
             # Mark processing as complete to avoid rerunning this section
             st.session_state.processing_complete = True
             st.experimental_rerun()  # Force a clean rerun with the new state
