@@ -199,7 +199,7 @@ if st.button("Generar Recomendaciones"):
 
     # Para los ingredientes que NO están en la base, ofrecemos alternativas
     if "selection" not in st.session_state:
-    st.session_state.selection = None
+        st.session_state.selection = None
     
     for ingredient in unidentified:
         suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
