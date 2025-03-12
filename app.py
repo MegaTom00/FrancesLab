@@ -165,6 +165,12 @@ def create_recommendations(ingredients, replacements):
 
 # INTERFAZ DE USUARIO #
 
+# Initialize the selections list in session state if it doesn't exist
+if "final_ingredients" not in st.session_state:
+    st.session_state.final_ingredients = []
+if "processing_complete" not in st.session_state:
+    st.session_state.processing_complete = False
+
 # Función para encontrar ingredientes similares
 def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
     matches = process.extract(ingredient, ingredient_list, limit=3)
@@ -188,20 +194,14 @@ if st.button("Generar Recomendaciones"):
     # Lista de los ingredientes de la Ingredients Matrix
     matrix_ingredients = ingredient_matrix['Ingredients'].str.lower().tolist()
     # Lista de los ingredientes definitivos para el análisis
-    final_ingredients = []
     unidentified = []
     # Agregamos a los ingredientes finales solo los que sí se encuentran dentro de la base
     for ingredient in clean_ingredients:
         if ingredient in matrix_ingredients:
-            final_ingredients.append(ingredient)
+            st.session_state.final_ingredients.append(ingredient)
         else:
             unidentified.append(ingredient)
 
-    # Initialize the selections list in session state if it doesn't exist
-    if "final_ingredients" not in st.session_state:
-        st.session_state.final_ingredients = []
-    if "processing_complete" not in st.session_state:
-        st.session_state.processing_complete = False
     
     # Only run the ingredient selection logic if processing is not complete
     if not st.session_state.processing_complete:
@@ -222,8 +222,8 @@ if st.button("Generar Recomendaciones"):
                 if st.button(f"Confirmar selección para '{ingredient}'", key=f"confirm_{i}"):
                     if selected_option != "Ninguna de las anteriores":
                         # Add to our selections list in session state if not already there
-                        if (ingredient, selected_option) not in st.session_state.selections:
-                            st.session_state.final_ingredients.append((ingredient, selected_option))
+                        if (selected_option) not in st.session_state.selections:
+                            st.session_state.final_ingredients.append(selected_option)
                         st.success(f"Seleccionado: {selected_option} para {ingredient}")
                     else:
                         st.write(f"El ingrediente {ingredient} será omitido")
