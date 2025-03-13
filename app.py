@@ -224,7 +224,7 @@ if not st.session_state.processing_complete:
                 else:
                     st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
                     st.stop()
-                if st.session_state.selection_key is not None:
+                if st.session_state[selection_key] is not None:
                     st.session_state.final_ingredients.append(st.session_state[selection_key])
             
             # Mark processing as complete to avoid rerunning this section
