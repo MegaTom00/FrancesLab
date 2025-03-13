@@ -176,6 +176,26 @@ def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
     matches = process.extract(ingredient, ingredient_list, limit=3)
     return [match for match, score, _ in matches if score >= threshold]
 
+# Función para seleccionar ingredientes sin reiniciar toda la app usando la fragmentación
+# Crear un fragmento para cada selectbox
+@st.fragment
+def ingredient_selector(ingredient, i, suggestions):
+    selection_key = f"selection_{i}_{ingredient}"
+    
+    # Selección del usuario
+    selected = st.selectbox(
+        f"Selecciona una alternativa para '{ingredient}'",
+        suggestions + ["Ninguna de las anteriores"],
+        index=None,
+        placeholder="Selecciona una opción...",
+        key=selection_key
+    )
+    
+    # Si hay una selección, actualizar final_ingredients
+    if selected is not None and selected != "Ninguna de las anteriores":
+        if selected not in st.session_state.final_ingredients:
+            st.session_state.final_ingredients.append(selected)
+
 # Título de la aplicación
 st.title("Sistema de Recomendación de Ingredientes Cosméticos")
 # Input de la lista de ingredientes
@@ -213,20 +233,10 @@ if not st.session_state.processing_complete:
     
                 suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
                 if suggestions:
-                    st.selectbox(
-                        f"Selecciona una alternativa para '{ingredient}'",
-                        suggestions + ["Ninguna de las anteriores"],
-                        index=None,
-                        placeholder = "Selecciona una opción...",
-                        key=selection_key
-                    )
-                       
+                    ingredient_selector(ingredient, i, suggestions) # Llamamos el fragmento de selección
                 else:
                     st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
                     st.stop()
-                if st.session_state[selection_key] is not None:
-                    st.session_state.final_ingredients.append(st.session_state[selection_key])
-            
             if st.button("Confirmar Selecciones"):
                 # Mark processing as complete to avoid rerunning this section
                 st.session_state.processing_complete = True
