@@ -179,8 +179,7 @@ def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
 # Función para actualizar selección de sugerencias
 def update_selection(ingredient, selection):
     if selection != "Ninguna de las anteriores":
-        if selection not in st.session_state.final_ingredients:
-            st.session_state.final_ingredients.append(selection)
+        st.session_state.final_ingredients.append(selection)            
     else:
         st.write(f"El ingrediente {ingredient} será omitido")
 
@@ -224,10 +223,10 @@ if not st.session_state.processing_complete:
                     st.selectbox(
                         f"Selecciona una alternativa para '{ingredient}'",
                         suggestions + ["Ninguna de las anteriores"],
-                        index=0,
+                        index=None,
                         key=selection_key,
                         on_change=update_selection,
-                        args=(ingredient, st.session_state[selection_key])
+                        args=(ingredient, st.session_state.selection_key)
                     )
                     
                 else:
