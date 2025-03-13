@@ -176,13 +176,6 @@ def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
     matches = process.extract(ingredient, ingredient_list, limit=3)
     return [match for match, score, _ in matches if score >= threshold]
 
-# Función para actualizar selección de sugerencias
-def update_selection(ingredient, selection):
-    if selection != "Ninguna de las anteriores":
-        st.session_state.final_ingredients.append(selection)            
-    else:
-        st.write(f"El ingrediente {ingredient} será omitido")
-
 # Título de la aplicación
 st.title("Sistema de Recomendación de Ingredientes Cosméticos")
 # Input de la lista de ingredientes
@@ -224,19 +217,20 @@ if not st.session_state.processing_complete:
                         f"Selecciona una alternativa para '{ingredient}'",
                         suggestions + ["Ninguna de las anteriores"],
                         index=None,
-                        key=selection_key,
-                        on_change=update_selection,
-                        args=(ingredient, st.session_state.selection_key)
+                        placeholder = "Selecciona una opción...",
+                        key=selection_key
                     )
-                    
+                       
                 else:
                     st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
                     st.stop()
-                    
-            if st.button("Finalizar selecciones"):
-                # Mark processing as complete to avoid rerunning this section
-                st.session_state.processing_complete = True
-                st.experimental_rerun()  # Force a clean rerun with the new state
+                if st.session_state.selection_key is not None:
+                    st.session_state.final_ingredients.append(st.session_state[selection_key])
+            
+            # Mark processing as complete to avoid rerunning this section
+            st.session_state.processing_complete = True
+            st.rerun()  # Force a clean rerun with the new state
+            
         else:
             # Mark processing as complete to avoid rerunning this section
             st.session_state.processing_complete = True
