@@ -227,9 +227,10 @@ if not st.session_state.processing_complete:
                 if st.session_state[selection_key] is not None:
                     st.session_state.final_ingredients.append(st.session_state[selection_key])
             
-            # Mark processing as complete to avoid rerunning this section
-            st.session_state.processing_complete = True
-            st.rerun()  # Force a clean rerun with the new state
+            if st.button("Confirmar Selecciones"):
+                # Mark processing as complete to avoid rerunning this section
+                st.session_state.processing_complete = True
+                st.rerun()  # Force a clean rerun with the new state
             
         else:
             # Mark processing as complete to avoid rerunning this section
