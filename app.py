@@ -181,7 +181,6 @@ def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
 # Función para seleccionar ingredientes sin reiniciar toda la app usando la fragmentación
 # Crear un fragmento para cada selectbox
 @st.fragment
-@st.fragment
 def ingredient_selector(ingredient, i, suggestions):
     selection_key = f"selection_{i}_{ingredient}"
     
@@ -213,7 +212,7 @@ st.write("Ingresa una lista de ingredientes para obtener recomendaciones.")
 
 
 # Botón para generar recomendaciones, inicio del proceso
-if not st.session_state.processing_complete:
+if st.session_state.processing_complete is False:
     ingredients_list = st.text_area("Lista de Ingredientes", placeholder="Ejemplo: water, sodium hydroxide, fragrance")
     
     if st.button("Generar Recomendaciones"):
@@ -235,7 +234,6 @@ if not st.session_state.processing_complete:
                 unidentified.append(ingredient)
     
         
-        # Selección de ingredientes sugeridos para unidentified
         # Selección de ingredientes sugeridos para unidentified
         if unidentified:
             # Inicializar una variable para rastrear si todos los ingredientes tienen selecciones
@@ -271,7 +269,7 @@ if not st.session_state.processing_complete:
             st.rerun()  # Force a clean rerun with the new state
            
 # Display results after processing is complete
-if st.session_state.processing_complete:
+if st.session_state.processing_complete is True:
     final_ingredients = st.session_state.final_ingredients
     if not final_ingredients:
         st.error("No se han procesado ingredientes válidos.")
