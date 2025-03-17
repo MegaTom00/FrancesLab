@@ -257,8 +257,6 @@ if st.session_state.processing_complete is False:
             if st.button("Confirmar Selecciones"):
                 if all(st.session_state.selections_made):
                     st.session_state.processing_complete = True
-                    # Limpiar variables de seguimiento
-                    del st.session_state.selections_made
                     st.rerun()  # Ahora es seguro hacer rerun
                 else:
                     st.warning("Por favor, selecciona una opción para cada ingrediente no identificado.")
