@@ -170,6 +170,8 @@ if "final_ingredients" not in st.session_state:
     st.session_state.final_ingredients = []
 if "processing_complete" not in st.session_state:
     st.session_state.processing_complete = False
+if "selections_made" not in st.session_state:
+    st.session_state.selections_made = []
 
 # Función para encontrar ingredientes similares
 def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
@@ -179,22 +181,30 @@ def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
 # Función para seleccionar ingredientes sin reiniciar toda la app usando la fragmentación
 # Crear un fragmento para cada selectbox
 @st.fragment
+@st.fragment
 def ingredient_selector(ingredient, i, suggestions):
     selection_key = f"selection_{i}_{ingredient}"
     
-    # Selección del usuario
-    selected = st.selectbox(
+    # Inicializar la clave en session_state si no existe
+    if selection_key not in st.session_state:
+        st.session_state[selection_key] = None
+    
+    # Definir callback para manejar la selección
+    def update_selection():
+        selected = st.session_state[selection_key]
+        if selected is not None and selected != "Ninguna de las anteriores":
+            if selected not in st.session_state.final_ingredients:
+                st.session_state.final_ingredients.append(selected)
+    
+    # Selección del usuario con callback
+    st.selectbox(
         f"Selecciona una alternativa para '{ingredient}'",
         suggestions + ["Ninguna de las anteriores"],
         index=None,
         placeholder="Selecciona una opción...",
-        key=selection_key
+        key=selection_key,
+        on_change=update_selection
     )
-    
-    # Si hay una selección, actualizar final_ingredients
-    if selected is not None and selected != "Ninguna de las anteriores":
-        if selected not in st.session_state.final_ingredients:
-            st.session_state.final_ingredients.append(selected)
 
 # Título de la aplicación
 st.title("Sistema de Recomendación de Ingredientes Cosméticos")
@@ -226,21 +236,34 @@ if not st.session_state.processing_complete:
     
         
         # Selección de ingredientes sugeridos para unidentified
+        # Selección de ingredientes sugeridos para unidentified
         if unidentified:
+            # Inicializar una variable para rastrear si todos los ingredientes tienen selecciones
+            if "selections_made" not in st.session_state:
+                st.session_state.selections_made = [False] * len(unidentified)
+            
+            # Mostrar todos los selectboxes
             for i, ingredient in enumerate(unidentified):
-                # Create a unique key for each selectbox
-                selection_key = f"selection_{i}_{ingredient}"
-    
                 suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
                 if suggestions:
-                    ingredient_selector(ingredient, i, suggestions) # Llamamos el fragmento de selección
+                    ingredient_selector(ingredient, i, suggestions)
+                    # Verificar si se ha hecho una selección para este ingrediente
+                    selection_key = f"selection_{i}_{ingredient}"
+                    if selection_key in st.session_state and st.session_state[selection_key] is not None:
+                        st.session_state.selections_made[i] = True
                 else:
                     st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
                     st.stop()
+            
+            # Botón de confirmación que solo procede si todas las selecciones están hechas
             if st.button("Confirmar Selecciones"):
-                # Mark processing as complete to avoid rerunning this section
-                st.session_state.processing_complete = True
-                st.rerun()  # Force a clean rerun with the new state
+                if all(st.session_state.selections_made):
+                    st.session_state.processing_complete = True
+                    # Limpiar variables de seguimiento
+                    del st.session_state.selections_made
+                    st.rerun()  # Ahora es seguro hacer rerun
+                else:
+                    st.warning("Por favor, selecciona una opción para cada ingrediente no identificado.")
             
         else:
             # Mark processing as complete to avoid rerunning this section
