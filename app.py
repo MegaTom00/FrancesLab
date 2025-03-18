@@ -254,11 +254,13 @@ if st.session_state.processing_complete is False:
                     st.stop()
             
             # Botón de confirmación que solo procede si todas las selecciones están hechas
-            if st.button("Confirmar Selecciones"):
+            def confirm_selections():
                 if all(st.session_state.selections_made):
                     st.session_state.processing_complete = True
-                    st.rerun()  # Ahora es seguro hacer rerun
-                else:
+            
+            # Luego en tu código:
+            if st.button("Confirmar Selecciones", on_click=confirm_selections):
+                if not all(st.session_state.selections_made):
                     st.warning("Por favor, selecciona una opción para cada ingrediente no identificado.")
             
         else:
