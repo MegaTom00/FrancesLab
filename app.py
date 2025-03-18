@@ -208,6 +208,10 @@ def ingredient_selector(ingredient, i, suggestions):
     )
 
 # LOGO Y TÍTULOS DE LA APP
+
+# Set wide layout
+st.set_page_config(layout="wide")
+
 # Function to load and encode the image
 def get_base64_encoded_image(image_path):
     with open(image_path, "rb") as img_file:
