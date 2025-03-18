@@ -231,8 +231,8 @@ with logo_col:
 # Add title to the second column
 with title_col:
     st.title("FrancesLab")
+    st.header("El hogar de nuestro algoritmo FRANCES")
 
-st.header("FRANCES")
 st.header("Sistema de Recomendación de Ingredientes Cosméticos")
 
 # Input de la lista de ingredientes
