@@ -340,3 +340,4 @@ if st.session_state.processing_complete is True:
     
     if st.button("Nueva búsqueda"):
         reset_session()
+        st.rerun()
