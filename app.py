@@ -206,7 +206,7 @@ def ingredient_selector(ingredient, i, suggestions):
     )
 
 # Logo y título de la aplicación
-st.logo("Logo Dr. Frances.jpg")
+st.logo("Logo.jpg")
 st.title("Sistema de Recomendación de Ingredientes Cosméticos")
 # Input de la lista de ingredientes
 st.write("Ingresa una lista de ingredientes para obtener recomendaciones.")
