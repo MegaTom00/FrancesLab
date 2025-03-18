@@ -239,12 +239,12 @@ with title_col:
 
 st.header("Sistema de Recomendación de Ingredientes Cosméticos")
 
-# Input de la lista de ingredientes
-st.write("Ingresa una lista de ingredientes para obtener recomendaciones.")
-
 
 # Botón para generar recomendaciones, inicio del proceso
 if st.session_state.processing_complete is False:
+    
+    # Input de la lista de ingredientes
+    st.write("Ingresa una lista de ingredientes para obtener recomendaciones.")
     ingredients_list = st.text_area("Lista de Ingredientes", placeholder="Ejemplo: water, sodium hydroxide, fragrance")
     
     if st.button("Generar Recomendaciones"):
