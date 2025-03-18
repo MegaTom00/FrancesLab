@@ -232,6 +232,7 @@ with logo_col:
 with title_col:
     st.title("FrancesLab")
 
+st.header("FRANCES")
 st.header("Sistema de Recomendación de Ingredientes Cosméticos")
 
 # Input de la lista de ingredientes
