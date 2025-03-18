@@ -244,8 +244,7 @@ st.header("Sistema de Recomendación de Ingredientes Cosméticos")
 if st.session_state.processing_complete is False:
     
     # Input de la lista de ingredientes
-    st.write("Ingresa una lista de ingredientes para obtener recomendaciones.")
-    ingredients_list = st.text_area("Lista de Ingredientes", placeholder="Ejemplo: water, sodium hydroxide, fragrance")
+    ingredients_list = st.text_area("Ingresa una lista de ingredientes", placeholder="Ejemplo: water, sodium hydroxide, fragrance")
     
     if st.button("Generar Recomendaciones"):
         # Preprocesamiento de los ingredientes
