@@ -8,6 +8,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from scipy.spatial.distance import cdist
 from rapidfuzz import process
+import base64
+from pathlib import Path
 
 
 # BASES DE DATOS #
@@ -205,9 +207,33 @@ def ingredient_selector(ingredient, i, suggestions):
         on_change=update_selection
     )
 
-# Logo y título de la aplicación
-st.logo("Logo.jpg", size= "large")
-st.title("Sistema de Recomendación de Ingredientes Cosméticos")
+# LOGO Y TÍTULOS DE LA APP
+# Function to load and encode the image
+def get_base64_encoded_image(image_path):
+    with open(image_path, "rb") as img_file:
+        return base64.b64encode(img_file.read()).decode()
+
+# Create two columns for logo and title
+logo_col, title_col = st.columns([1, 4])  # Adjust ratio as needed
+
+# Add logo to the first column
+with logo_col:
+    try:
+        # Option 1: Using direct image display
+        st.image("Logo.jpg", width=150)  # Adjust width as needed
+        
+        # Option 2: If you prefer the base64 approach
+        # img_base64 = get_base64_encoded_image("Logo.jpg")
+        # st.markdown(f'<img src="data:image/jpeg;base64,{img_base64}" width="150">', unsafe_allow_html=True)
+    except Exception as e:
+        st.error(f"Error loading logo: {e}")
+
+# Add title to the second column
+with title_col:
+    st.title("FrancesLab")
+
+st.header("Sistema de Recomendación de Ingredientes Cosméticos")
+
 # Input de la lista de ingredientes
 st.write("Ingresa una lista de ingredientes para obtener recomendaciones.")
 
