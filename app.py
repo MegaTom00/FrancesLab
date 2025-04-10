@@ -309,7 +309,8 @@ if st.session_state.processing_complete is True:
         st.error("No se han procesado ingredientes válidos.")
         st.stop()
     st.success(f"Ingredientes Procesados: {final_ingredients}")
-    st.write(f"Los siguientes ingredientes no se encuentran en la base de datos y tampoco presentaron sugerencias: {no_suggestions}")
+    if no_suggestions:
+        st.write(f"Los siguientes ingredientes no se encuentran en la base de datos y tampoco presentaron sugerencias: {no_suggestions}")
     
     # Análisis de los ingredientes    
     natural_ingredients, artificial_ingredients, true_properties = list_analisis(final_ingredients, ingredient_matrix)
