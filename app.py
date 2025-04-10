@@ -174,6 +174,9 @@ if "processing_complete" not in st.session_state:
     st.session_state.processing_complete = False
 if "selections_made" not in st.session_state:
     st.session_state.selections_made = []
+if "no_suggestions" not in st.session_state:
+    st.session_state.no_suggestions = []
+
 
 # Función para encontrar ingredientes similares
 def find_similar_ingredients(ingredient, ingredient_list, threshold=80):
@@ -270,7 +273,7 @@ if st.session_state.processing_complete is False:
             # Inicializar una variable para rastrear si todos los ingredientes tienen selecciones
             if "selections_made" not in st.session_state:
                 st.session_state.selections_made = [False] * len(unidentified)
-            
+                
             # Mostrar todos los selectboxes
             for i, ingredient in enumerate(unidentified):
                 suggestions = find_similar_ingredients(ingredient, matrix_ingredients)
@@ -281,8 +284,7 @@ if st.session_state.processing_complete is False:
                     if selection_key in st.session_state and st.session_state[selection_key] is not None:
                         st.session_state.selections_made[i] = True
                 else:
-                    st.write(f"No se encontró una coincidencia para el ingrediente '{ingredient}', por favor revisa su nombre o elimínalo de la lista ingresada de ingredientes y reinténtalo")
-                    st.stop()
+                    st.session_state.no_suggestions.append(ingredient)
             
             # Botón de confirmación que solo procede si todas las selecciones están hechas
             def confirm_selections():
@@ -302,10 +304,12 @@ if st.session_state.processing_complete is False:
 # Display results after processing is complete
 if st.session_state.processing_complete is True:
     final_ingredients = st.session_state.final_ingredients
+    no_suggestions = st.session_state.no_suggestions
     if not final_ingredients:
         st.error("No se han procesado ingredientes válidos.")
         st.stop()
-    st.success(f"Ingredientes Procesados: {final_ingredients}")   
+    st.success(f"Ingredientes Procesados: {final_ingredients}")
+    st.write(f"Los siguientes ingredientes no se encuentran en la base de datos y tampoco presentaron sugerencias: {no_suggestions}")
     
     # Análisis de los ingredientes    
     natural_ingredients, artificial_ingredients, true_properties = list_analisis(final_ingredients, ingredient_matrix)
